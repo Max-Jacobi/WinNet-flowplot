@@ -72,6 +72,9 @@ class Nucleus(object):
         Z = np.argwhere(Elnames == self.el)
         try:
             self.Z = int(Z)
+        except TypeError:
+            print(self.el)
+            print(np.argwhere(Elnames == self.el))
         except ValueError:
             raise ValueError("Can't get Z from element name {}".format(self.name))
 

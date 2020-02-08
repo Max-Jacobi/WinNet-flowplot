@@ -20,4 +20,4 @@ class Flow(object):
         return "flow: {}->{}".format(self.nuc_in.Name, self.nuc_out.Name)
 
     def __str__(self):
-        return "{}->{}".format(self.nuc_in.Name, self.nuc_out.Name)
+        return "{}->{}".format(self.nuc_in.name, self.nuc_out.name)

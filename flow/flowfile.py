@@ -31,7 +31,6 @@ class FlowFile(FlowCollection):
         self.path = path
         self.num = int(path.split("_")[-1][:-4])
 
-        # nin, zin, yin, nout, zout, yout, fls = np.loadtxt(path, skiprows=3, unpack=True, )
         with open(path, 'r') as ff:
             header = ff.readline()
             if 'dt' in header:
@@ -42,11 +41,11 @@ class FlowFile(FlowCollection):
                 self.time, self.temp, self.dens = np.array(header.split()).astype(float)
                 self.dt = self._get_fake_dt()
 
-        for ni, zi, yi, no, zo, yo, fl in np.loadtxt(path, skiprows=3):
-            if (yi < ymin) or (fl <= 1e-99):
+        for nin, zin, yin, nout, zout, yout, fl in np.loadtxt(path, skiprows=3):
+            if (yin < ymin) or (fl <= 1e-99):
                 continue
-            if yo < ymin:
-                yo = -np.inf
+            if yout < ymin:
+                yout = -np.inf
             self.addFlowFromZN(nin, zin, yin, nout, zout, yout, fl)
 
         self.sort()
@@ -57,10 +56,10 @@ class FlowFile(FlowCollection):
     def _get_fake_dt(self):
         if self.num == 0:
             return 0
-        base = '/'.join(path.split('/')[:-2])
+        base = '/'.join(self.path.split('/')[:-2])
         for file in os.listdir(base):
             if '.par' in file:
-                parfile = '{}/{}'.format(base,file)
+                parfile = '{}/{}'.format(base, file)
                 with open(parfile) as pf:
                     for line in pf:
                         if 'snapshot_every' in line:

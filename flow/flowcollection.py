@@ -1,5 +1,6 @@
 from .. import np
 from .flux import Flow
+from ..nucleus import Nucleus
 
 
 class FlowCollection(object):
@@ -23,11 +24,10 @@ class FlowCollection(object):
         self.nuclei = np.array([])
         self.known_nucs = np.array([])
 
-
     def addFlowFromName(self, name, flow):
         '''
         for addition of flowcollection
-        add Flow from name 
+        add Flow from name
         assumes Nuclei are in self.nuclei
         '''
         name_in, name_out = name.split('->')
@@ -40,7 +40,8 @@ class FlowCollection(object):
         return flow
 
     def addFlowFromZN(self, Nin,  Zin, Yin, Nout, Zout, Yout, flow):
-        ''' for flowfile readin
+        '''
+        for flowfile readin
         add Flow from Zin, Zout, Nin and Nout
         '''
         chk_in = 1e3*Zin + Nin
@@ -48,12 +49,12 @@ class FlowCollection(object):
         if chk_in in self.known_nucs:
             nuc_in = self.getNuccleus(chk=chk_in)
         else:
-            nuc_in = self.addNucleus(chk=chk_in, Y=Y_in)
-             
+            nuc_in = self.addNucleus(chk=chk_in, Y=Yin)
+
         if chk_out in self.known_nucs:
             nuc_out = self.getNuccleus(chk=chk_out)
         else:
-            nuc_out = self.addNucleus(chk=chk_out, Y=Y_out)
+            nuc_out = self.addNucleus(chk=chk_out, Y=Yout)
         flow = Flow(nuc_in, nuc_out, flow)
         self.flows = np.append(self.flows, flow)
         nuc_in.flow_out = np.append(nuc_in.flow_out, flow)
@@ -64,58 +65,58 @@ class FlowCollection(object):
         new = FlowCollection(ymin=min(self.ymin, other.ymin))
 
         nucs1 = self.nuclei.astype(str)
-        abs1 = map(lambda n: n.Y, self.nuclei)
+        abs1 = np.array(list(map(lambda n: n.Y, self.nuclei)))
         flow_names1 = self.flows.astype(str)
-        flows1 = map(lambda f: f.flow, self.flows)
+        flows1 = np.array(list(map(lambda f: f.flow, self.flows)))
 
         nucs2 = other.nuclei.astype(str)
-        abs2 = map(lambda n: n.Y, other.nuclei)
+        abs2 = np.array(list(map(lambda n: n.Y, other.nuclei)))
         flow_names2 = other.flows.astype(str)
-        flows2 = map(lambda f: f.flow, other.flows)
+        flows2 = np.array(list(map(lambda f: f.flow, other.flows)))
 
         for name, i1, i2 in zip(*np.intersect1d(nucs1, nucs2, assume_unique=True, return_indices=True)):
             new.addNucleus(name=name, Y=max(abs1[i1], abs2[i2]))
         for name in np.setxor1d(nucs1, nucs2, assume_unique=True):
-            Y = np.concatenate((abs1[nucs1 == name], abs2[nucs2 == name]))[0]        
+            Y = np.concatenate((abs1[nucs1 == name], abs2[nucs2 == name]))[0]
             new.addNucleus(name=name, Y=Y)
 
         for name, i1, i2 in zip(*np.intersect1d(flow_names1, flow_names2, assume_unique=True, return_indices=True)):
             new.addFlowFromName(name, flows1[i1] + flows2[i2])
         for name in np.setxor1d(flow_names1, flow_names2, assume_unique=True):
-            flow = np.concatenate((flows1[flow_names1 == name], flows2[flow_names2 == name]))[0]        
+            flow = np.concatenate((flows1[flow_names1 == name], flows2[flow_names2 == name]))[0]
             new.addFlowFromName(name, flow)
 
         new.sort()
-            
+
         return new
 
-    def addNucleus(self, *kargs):
+    def addNucleus(self, **kwargs):
         '''
         Add a nucleus object from either:
-        - chk 
-        - name 
+        - chk
+        - name
         - Z and N
         Optional:
         - Y
         '''
         nuc = Nucleus(**kwargs)
-        self.known_nucs = np.append(self.known_nucs, chk)
+        self.known_nucs = np.append(self.known_nucs, 1e3*nuc.Z+nuc.N)
         self.nuclei = np.append(self.nuclei, nuc)
         nuc.flow_in = np.array([])
-        nuc.flow_out  = np.array([])
+        nuc.flow_out = np.array([])
         return nuc
 
     def getNuccleus(self, chk=None, name=None, Z=None, N=None):
         '''
         Get a nucleus object from either:
-        - chk 
-        - name 
+        - chk
+        - name
         - Z and N
         '''
-        if chk is not None:
+        if name is not None:
+            ind = int(np.argwhere(self.nuclei.astype(str) == name))
+        elif chk is not None:
             ind = int(np.argwhere(self.known_nucs == chk))
-        elif name is not None:
-            ind = int(np.argwhere(self.nuclei.astype(int) == name))
         elif Z is not none and N is not None:
             chk = 1e3*Z + N
             ind = int(np.argwhere(self.known_nucs == chk))
@@ -130,10 +131,15 @@ class FlowCollection(object):
             self.flows = self.flows[np.argsort(self.flows.astype(str))]
 
     def getMaxFlow(self):
+        '''
+        reutrns maximal flow inside flowfile
+        '''
         return max(list(map(lambda f: f.flow, self.flows)))
 
     def getBounds(self):
-        ''' returns minZ, minN, maxZ, maxN'''
+        '''
+        returns (minZ, minN, maxZ, maxN)
+        '''
         maxZ = max(list(map(lambda n: n.Z, self.nuclei)))
         maxN = max(list(map(lambda n: n.N, self.nuclei)))
         minZ = min(list(map(lambda n: n.Z, self.nuclei)))
@@ -144,7 +150,7 @@ class FlowCollection(object):
         keys = self.flows.astype(str)
         flows = map(lambda f: f.flow, self.flows)
         return dict(zip(keys, flows))
-        
+
     def getNucleiDict(self):
         keys = self.nuclei.astype(str)
         ab = map(lambda m: n.Y, self.nuclei)
@@ -152,4 +158,3 @@ class FlowCollection(object):
 
     def __repr__(self):
         return "flowcollection: {} flows".format(len(self.flows))
-
