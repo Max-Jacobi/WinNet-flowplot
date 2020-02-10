@@ -1,28 +1,26 @@
 import os
 from .. import np
-from ..nucleus import Nucleus
+from ..isotope import Isotope
 from .flux import Flow
 from .flowcollection import FlowCollection
 
 
 class FlowFile(FlowCollection):
     '''
-    Get flows and nuclei from flowfile.
+    Get flows and isotopes from flowfile.
 
     Input:
        path        - path to FlowFile
        num         - number of flowfile
        ymin        - (optional) minimum abundance to be considered
     Attributes:
-    - nuclei       - array of nucleus objects
+    - isotopes       - array of isotope objects
     - flows        - array of absolute(!) flows (dY/dt)*dt
     Methods:
-    - addNucleus
-    - getNucleus
     - getMaxFlow
-    - addition     - creates a new FlowFile instance
+    - addition     - creates a new FlowCollection instance
                      - flows are added together
-                     - nucleus with higher abundance is kept
+                     - isotope with higher abundance is kept
     '''
 
     def __init__(self, path, ymin=1e-10):
@@ -46,7 +44,7 @@ class FlowFile(FlowCollection):
                 continue
             if yout < ymin:
                 yout = -np.inf
-            self.addFlowFromZN(nin, zin, yin, nout, zout, yout, fl)
+            self._addFlowFromZN(nin, zin, yin, nout, zout, yout, fl)
 
         self.sort()
 
@@ -70,10 +68,12 @@ class FlowFile(FlowCollection):
                 out_every = 1
 
         prev_path = '_'.join(self.path.split('_')[:-1]) + '_{:04d}.dat'.format(self.num-1)
+        if not os.path.isfile(prev_path):
+            return 1
         with open(prev_path, 'r') as ff:
-            ff.readline()
-            header = ff.readline()
-            prev_time, _, _ = np.array(header.split()).astype(float)
+                ff.readline()
+                header = ff.readline()
+                prev_time, _, _ = np.array(header.split()).astype(float)
         return (self.time - prev_time)/out_every
 
     def __repr__(self):

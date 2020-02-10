@@ -1,4 +1,6 @@
 import numpy as np
+import os 
 
-Elnames = np.loadtxt("/home/mjacobi/Winnet/Winnet_scripts/my_scripts/data/elementlist", dtype=str)
-St_N, St_Z = np.loadtxt('/home/mjacobi/Winnet/Winnet_scripts/my_scripts/data/stableiso.dat', unpack=True, usecols=(1, 2))
+datapath = os.path.dirname(__file__) +'/data'
+Elnames = np.loadtxt("{}/elementlist".format(datapath), dtype=str)
+St_N, St_Z = np.loadtxt('{}/stableiso.dat'.format(datapath), unpack=True, usecols=(1, 2))

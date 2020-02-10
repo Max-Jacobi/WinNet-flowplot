@@ -1,8 +1,8 @@
 from . import np
-from .nucleus import nucleus
+from .isotope import isotope
 
 
-class snapshot(object):
+class Snapshot(IsotopeCollection):
     '''
     Input:
        path     - path to snapfile
@@ -12,6 +12,7 @@ class snapshot(object):
     '''
 
     def __init__(self, path):
+        super(Snapshot, self).__init__()
         Ns, Zs, Ys = np.loadtxt(path, skiprows=3, usecols=(0, 1, 2), unpack=True)
 
         with open(path, 'r') as sf:
@@ -19,6 +20,6 @@ class snapshot(object):
             header = sf.readline()
             self.time, self.temp, self.dens = np.array(header.split()).astype(float)
 
-        self.nuclei = np.array([nucleus(Z=Z, N=N, Y=Y) for N, Z, Y in zip(Ns, Zs, Ys)])
+        self.isotopes = np.array([isotope(Z=Z, N=N, Y=Y) for N, Z, Y in zip(Ns, Zs, Ys)])
         self.path = path
         self.num = int(path.split("_")[-1][:4])

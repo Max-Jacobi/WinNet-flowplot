@@ -1,20 +1,20 @@
 from . import Elnames, np
 
 
-class Nucleus(object):
+class Isotope(object):
 
     """
-    nucleus: contains basic information of a nuclei.
+    isotope: contains basic information of an isotope.
     For example the name, the name in the network, the amount of protons, neutrons and the mass number
     """
 
-    def __init__(self, name=None, Z=None, N=None, Y=None, chk=None):
+    def __init__(self, name=None, Z=None, N=None, Y=np.nan, chk=None):
         """
         Input either:
-          name       - name of the nucleus
+          name       - name of the isotope
         or:
-          Z          - proton number of nucleus
-          N          - neutron number of nucleus
+          Z          - proton number of isotope
+          N          - neutron number of isotope
         Atributes:
           A, Z, N, name, Name, el, El, ab
         """
@@ -34,7 +34,7 @@ class Nucleus(object):
             self.A = int(Z + N)
             self._get_Name()
         else:
-            raise(ValueError("Give either name or Z and N of nucleus"))
+            raise(ValueError("Give either name or Z and N of isotope"))
 
         # Special cases
         if self.name == 'p':
@@ -81,8 +81,8 @@ class Nucleus(object):
         self.N = self.A - self.Z
 
     def __repr__(self):
-        repr = "Nucleus: {}".format(self.Name)
-        if self.Y is not None:
+        repr = "Isotope: {}".format(self.Name)
+        if not np.isnan(self.Y):
             repr += ": Abundance: {}".format(self.Y)
         return repr
 
