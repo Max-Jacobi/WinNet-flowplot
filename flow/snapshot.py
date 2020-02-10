@@ -1,5 +1,6 @@
-from . import np
-from .isotope import isotope
+from .. import np
+from ..isotope import Isotope
+from .isotopecollection import IsotopeCollection
 
 
 class Snapshot(IsotopeCollection):
@@ -20,6 +21,6 @@ class Snapshot(IsotopeCollection):
             header = sf.readline()
             self.time, self.temp, self.dens = np.array(header.split()).astype(float)
 
-        self.isotopes = np.array([isotope(Z=Z, N=N, Y=Y) for N, Z, Y in zip(Ns, Zs, Ys)])
+        self.isotopes = np.array([Isotope(Z=Z, N=N, Y=Y) for N, Z, Y in zip(Ns, Zs, Ys)])
         self.path = path
         self.num = int(path.split("_")[-1][:4])
