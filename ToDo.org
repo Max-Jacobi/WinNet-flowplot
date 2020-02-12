@@ -1,0 +1,4 @@
+* TODO add elementlabel to plots
+* TODO add colorbars outside of plot
+* TODO add tick locators
+* TODO adjust zorder

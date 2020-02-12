@@ -1,6 +1,10 @@
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from ... import os, np, St_N, St_Z
 from ...flow import FlowFile
-from . import plotFlowCollection, plotIsotopeCollection
+from .. import plt
+from .flowplot import FlowCollectionPlot
+from .snapplot import IsotopeCollectionPlot
 
 '''
 Contains utility routines:
@@ -28,7 +32,7 @@ def TimeDensTempBox(ax, file, **kwargs):
     return text
 
 
-def plotMagicNumbers(ax, x=True, y=True, alpha=.2, color='k', lw=.1):
+def plotMagicNumbers(ax, x=True, y=True,  color='k', lw=.3):
     '''
     routine for ploting lines at magic numbers
     '''
@@ -37,23 +41,19 @@ def plotMagicNumbers(ax, x=True, y=True, alpha=.2, color='k', lw=.1):
         if y:
             ax.axhline(y=mn-.5, color=color, lw=lw)
             ax.axhline(y=mn+.5, color=color, lw=lw)
-            ax.fill_between(ax.get_xlim(), [mn+.5, mn+.5], [mn-.5, mn-.5], color=color, alpha=.3*alpha)
         if x:
             ax.axvline(x=mn-.5, color=color, lw=lw)
             ax.axvline(x=mn+.5, color=color, lw=lw)
-            ax.fill_betweenx(ax.get_ylim(), [mn+.5, mn+.5], [mn-.5, mn-.5], color=color, alpha=.3*alpha)
 
 
 def plotStableIsotopes(ax, **kwargs):
     '''
     routine for ploting the positions of stable isotopes
     '''
-    standart = {'color': 'k',
-                'marker': 'o'}
-    for k, s in standart.items():
-        if k not in kwargs.keys():
-            kwargs[k] = s
-
+    default = {'color': 'k',
+               's': 30}
+    for k, s in default.items():
+        kwargs.setdefault(k, s)
     im = ax.scatter(St_N, St_Z, **kwargs)
     return im
 
@@ -96,6 +96,8 @@ def plotFlowFile(ax, path):
     TimeDensTempBox(ax, ff)
     plotStableIsotopes(ax)
 
-    plotIsotopeCollection(ax, ff, cmap='jet')
-    plotFlowCollection(ax, ff, lw=.5,)
+    isos = IsotopeCollectionPlot(ax, ff, cmap='Greys')
+    flows = FlowCollectionPlot(ax, ff, lw=.5,)
+    isos.addColorBar(xshift=-.18)
+    flows.addColorBar()
     plotMagicNumbers(ax)

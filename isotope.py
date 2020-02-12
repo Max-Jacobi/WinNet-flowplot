@@ -1,4 +1,4 @@
-from . import Elnames, np
+from . import Elnames, np, getNZ
 
 
 class Isotope(object):
@@ -10,13 +10,13 @@ class Isotope(object):
 
     def __init__(self, name=None, Z=None, N=None, Y=np.nan, chk=None):
         """
-        Input either:
+        Input either of:
           name       - name of the isotope
-        or:
           Z          - proton number of isotope
           N          - neutron number of isotope
+          chk        - Z*1e3+N
         Atributes:
-          A, Z, N, name, Name, el, El, ab
+          A, Z, N, Y,name, Name, el, El
         """
 
         if chk is not None:
@@ -27,7 +27,7 @@ class Isotope(object):
         elif name is not None:
             self.name = name.lower()
             self.Name = name[0].upper() + name[1:].lower()
-            self._get_ZN()
+            self.N, self.Z = getNZ(self.name)
         elif Z is not None and N is not None:
             self.Z = int(Z)
             self.N = int(N)
@@ -54,31 +54,6 @@ class Isotope(object):
 
         self.name = self.el + str(self.A)
         self.Name = self.El + str(self.A)
-
-    def _get_ZN(self):
-        A = ''.join(filter(lambda x: x.isdigit(), self.name))
-        try:
-            self.A = int(A)
-        except ValueError:
-            raise ValueError("Can't get A from name {}".format(self.name))
-
-        self.el = ''.join(filter(lambda x: x.isalpha(), self.name))
-        if len(self.el) not in [1, 2]:
-            raise ValueError("Cant get element name from name {}".format(self.name))
-
-        self.el = self.el.lower()
-        self.El = self.el[0].upper() + self.el[1:]
-
-        Z = np.argwhere(Elnames == self.el)
-        try:
-            self.Z = int(Z)
-        except TypeError:
-            print(self.el)
-            print(np.argwhere(Elnames == self.el))
-        except ValueError:
-            raise ValueError("Can't get Z from element name {}".format(self.name))
-
-        self.N = self.A - self.Z
 
     def __repr__(self):
         repr = "Isotope: {}".format(self.Name)

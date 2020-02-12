@@ -5,11 +5,12 @@ from .isotopecollection import IsotopeCollection
 
 class Snapshot(IsotopeCollection):
     '''
+    Get isotopes from snapshot and create a isotopecollection
     Input:
        path     - path to snapfile
 
     Atributes:
-       path, num, time, temp, dens, nuclei
+       path, num, time, temp, dens, isotopes
     '''
 
     def __init__(self, path):
