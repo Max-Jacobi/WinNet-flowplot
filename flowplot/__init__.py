@@ -6,7 +6,7 @@ Elnames = np.loadtxt("{}/elementlist".format(datapath), dtype=str)
 St_N, St_Z = np.loadtxt('{}/stableiso.dat'.format(datapath), unpack=True, usecols=(1, 2))
 
 
-def geName(N, Z):
+def getName(N, Z):
     '''
     return name of isotpe from its neutron and proton numbers
     '''
