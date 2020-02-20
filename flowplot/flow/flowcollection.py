@@ -101,7 +101,7 @@ class FlowCollection(IsotopeCollection):
         '''
         Returns a new flowcollection with all isotopes but only the flows
         that are connected to the isotope with name <name> by N steps.
-        Flows are scaled such to match their parent flow
+        Flows are scaled to match their parent flow
         '''
         def prevFlows(flow):
             new_flows = []
@@ -139,7 +139,7 @@ class FlowCollection(IsotopeCollection):
         '''
         Returns a new flowcollection with all isotopes but only the flows
         that are connected to the isotope with name <name> by N steps.
-        Flows are scaled such to match their parent flow
+        Flows are scaled to match their parent flow
         '''
         def followingFlows(flow):
             new_flows = []
