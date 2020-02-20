@@ -10,6 +10,7 @@ def getName(N, Z):
     '''
     return name of isotpe from its neutron and proton numbers
     '''
+    N, Z = int(N), int(Z)
     el = Elnames[Z]
     A = Z + N
     return el + str(A)

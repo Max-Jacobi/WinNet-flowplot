@@ -1,4 +1,4 @@
-from .. import np
+from .. import np, getName
 from .flux import Flow
 from .isotopecollection import IsotopeCollection
 
@@ -23,7 +23,7 @@ class FlowCollection(IsotopeCollection):
         super(FlowCollection, self).__init__()
         self.flows = np.array([])
 
-    def _addFlowFromName(self, name, flow):
+    def addFlowFromName(self, name, flow):
         '''
         assumes Isotopes are in self.isotopes
         '''
@@ -36,25 +36,25 @@ class FlowCollection(IsotopeCollection):
         iso_out.flow_in = np.append(iso_out.flow_in, flow)
         return flow
 
-    def _addFlowFromZN(self, Nin,  Zin, Yin, Nout, Zout, Yout, flow):
+    def addFlowFromZN(self, Nin,  Zin, Yin, Nout, Zout, Yout, flow):
         '''
         add Flow from Zin, Zout, Nin and Nout
         checks for isotope in isotopes and adds it if it is not present
         '''
         if flow < 1e-99:
             return
-        chk_in = 1e3*Zin + Nin
-        chk_out = 1e3*Zout + Nout
+        name_in = getName(Nin, Zin)
+        name_out = getName(Nout, Zout)
 
-        if chk_in in self._known_isos:
-            iso_in = self.getIsotope(chk=chk_in)
+        if name_in in self.isotopes.astype(str):
+            iso_in = self.getIsotope(name=name_in)
         else:
-            iso_in = self._addIsotope(chk=chk_in, Y=Yin)
+            iso_in = self.addIsotope(name=name_in, Y=Yin)
 
-        if chk_out in self._known_isos:
-            iso_out = self.getIsotope(chk=chk_out)
+        if name_out in self.isotopes.astype(str):
+            iso_out = self.getIsotope(name=name_out)
         else:
-            iso_out = self._addIsotope(chk=chk_out, Y=Yout)
+            iso_out = self.addIsotope(name=name_out, Y=Yin)
 
         flow = Flow(iso_in, iso_out, flow)
         self.flows = np.append(self.flows, flow)
@@ -62,16 +62,15 @@ class FlowCollection(IsotopeCollection):
         iso_out.flow_in = np.append(iso_out.flow_in, flow)
         return flow
 
-    def _addIsotope(self, **kwargs):
+    def addIsotope(self, **kwargs):
         '''
         Add a isotope object from either of:
-        - chk
         - name
         - Z and N
         Optional:
         - Y
         '''
-        iso = super(FlowCollection, self)._addIsotope(**kwargs)
+        iso = super(FlowCollection, self).addIsotope(**kwargs)
         iso.flow_in = np.array([])
         iso.flow_out = np.array([])
         return iso
@@ -106,8 +105,8 @@ class FlowCollection(IsotopeCollection):
         def prevFlows(flow):
             new_flows = []
             for fl in flow.iso_in.flow_in:
-                if fl.flow < flow.flow*5e-2:
-                    continue
+                # if fl.flow < flow.flow*5e-2:
+                # continue
                 new_flows.append(Flow(fl.iso_in, fl.iso_out, fl.flow))
             sum_flows = sum(map(lambda f: f.flow, new_flows))
             for fl in new_flows:
@@ -117,20 +116,19 @@ class FlowCollection(IsotopeCollection):
         iso = self.getIsotope(name=name)
         subcol = FlowCollection()
         subcol.isotopes = self.isotopes
-        subcol._known_isos = np.vectorize(lambda i: i.Z*1e3 + i.N)(subcol.isotopes)
         for fl in iso.flow_in:
-            subcol._addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
-                                  Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
-                                  flow=fl.flow)
+            subcol.addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
+                                 Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
+                                 flow=fl.flow)
         oldFlows = subcol.flows
-        for nn in range(N):
+        for nn in range(N-1):
             newFlows = []
             for fl in np.concatenate([prevFlows(fl) for fl in oldFlows]):
                 if not np.any(str(fl) == subcol.flows.astype(str)):
                     newFlows.append(fl)
-                    subcol._addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
-                                          Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
-                                          flow=fl.flow)
+                    subcol.addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
+                                         Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
+                                         flow=fl.flow)
             oldFlows = newFlows
         subcol.sort()
         return subcol
@@ -144,8 +142,8 @@ class FlowCollection(IsotopeCollection):
         def followingFlows(flow):
             new_flows = []
             for fl in flow.iso_out.flow_out:
-                if fl.flow < flow.flow*5e-2:
-                    continue
+                # if fl.flow < flow.flow*5e-2:
+                #     continue
                 new_flows.append(Flow(fl.iso_in, fl.iso_out, fl.flow))
             sum_flows = sum(map(lambda f: f.flow, new_flows))
             for fl in new_flows:
@@ -155,20 +153,19 @@ class FlowCollection(IsotopeCollection):
         iso = self.getIsotope(name=name)
         subcol = FlowCollection()
         subcol.isotopes = self.isotopes
-        subcol._known_isos = np.vectorize(lambda i: i.Z*1e3 + i.N)(subcol.isotopes)
         for fl in iso.flow_out:
-            subcol._addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
-                                  Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
-                                  flow=fl.flow)
+            subcol.addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
+                                 Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
+                                 flow=fl.flow)
         oldFlows = subcol.flows
         for nn in range(N):
             newFlows = []
             for fl in np.concatenate([followingFlows(fl) for fl in oldFlows]):
                 if not np.any(str(fl) == subcol.flows.astype(str)):
                     newFlows.append(fl)
-                    subcol._addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
-                                          Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
-                                          flow=fl.flow)
+                    subcol.addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
+                                         Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
+                                         flow=fl.flow)
             oldFlows = newFlows
         subcol.sort()
         return subcol
@@ -190,16 +187,16 @@ class FlowCollection(IsotopeCollection):
 
         # for isotopes in both sets add an isotope with max(Y1, Y2)
         for name, i1, i2 in zip(*np.intersect1d(isos1, isos2, assume_unique=True, return_indices=True)):
-            new._addIsotope(name=name, Y=max(abs1[i1], abs2[i2]))
+            new.addIsotope(name=name, Y=max(abs1[i1], abs2[i2]))
         # add the rest
         for name in np.setxor1d(isos1, isos2, assume_unique=True):
             Y = np.concatenate((abs1[isos1 == name], abs2[isos2 == name]))[0]
-            new._addIsotope(name=name, Y=Y)
+            new.addIsotope(name=name, Y=Y)
 
         # for flows in both sets add a flow with the sum of flows
         names, is1, is2 = np.intersect1d(flow_names1, flow_names2, assume_unique=True, return_indices=True)
         for name, flow in zip(names, flows1[is1]+flows2[is2]):
-            new._addFlowFromName(name, flow)
+            new.addFlowFromName(name, flow)
 
         # if other contais the reverse of a flow in self but the flow in self is bigger
         # add the flow from self but substract the flow from other
@@ -207,14 +204,14 @@ class FlowCollection(IsotopeCollection):
         delflow = flows1[is1]-flows2[is2]
         mask = delflow > 0
         for name, flow in zip(names[mask], delflow[mask]):
-            new._addFlowFromName(name, flow)
+            new.addFlowFromName(name, flow)
 
         # if other contais the reverse of a flow in self but the flow in other is bigger
         # add the flow from other but substract the flow from self
         mask = np.logical_not(mask)
         names = flow_names2[is2]
         for name, flow in zip(names[mask], -delflow[mask]):
-            new._addFlowFromName(name, flow)
+            new.addFlowFromName(name, flow)
 
         # finaly for flows that are only self or other and not the reverse of anything just add the flow
         names = np.setxor1d(flow_names1, flow_names2, assume_unique=True)
@@ -222,7 +219,7 @@ class FlowCollection(IsotopeCollection):
         for name in names:
             if name not in rev_names:
                 flow = np.concatenate((flows1[flow_names1 == name], flows2[flow_names2 == name]))[0]
-                new._addFlowFromName(name, flow)
+                new.addFlowFromName(name, flow)
 
         new.sort()
         return new

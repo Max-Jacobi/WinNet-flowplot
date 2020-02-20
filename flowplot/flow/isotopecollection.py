@@ -1,4 +1,4 @@
-from .. import np
+from .. import np, getName
 from ..isotope import Isotope
 
 
@@ -21,47 +21,35 @@ class IsotopeCollection(object):
     def __init__(self,  ymin=1e-10):
         self.ymin = ymin
         self.isotopes = np.array([])
-        self._known_isos = np.array([])
 
-    def _addIsotope(self, **kwargs):
+    def addIsotope(self, **kwargs):
         '''
         Add a isotope object from either:
-        - chk
         - name
         - Z and N
         Optional:
         - Y
         '''
         iso = Isotope(**kwargs)
-        self._known_isos = np.append(self._known_isos, 1e3*iso.Z+iso.N)
         self.isotopes = np.append(self.isotopes, iso)
         return iso
 
-    def getIsotope(self, chk=None, name=None, Z=None, N=None):
+    def getIsotope(self, name=None, Z=None, N=None):
         '''
         Get a isotope object from either:
-        - chk
         - name
         - Z and N
         '''
-        if name is not None:
-            try:
-                ind = int(np.argwhere(self.isotopes.astype(str) == name.lower()))
-            except TypeError:
-                raise ValueError('isotope {} not in isotope list'.format(name))
-        elif chk is not None:
-            try:
-                ind = int(np.argwhere(self._known_isos == chk))
-            except TypeError:
-                raise ValueError('isotope with chk {} not in isotope list'.format(chk))
-        elif Z is not None and N is not None:
-            chk = 1e3*Z + N
-            try:
-                ind = int(np.argwhere(self._known_isos == chk))
-            except TypeError:
-                raise ValueError('isotope with Z={} and N={} not in isotope list'.format(Z, N))
-        else:
-            raise ValueError("Give name, Z and N, or checksum")
+        if name is None:
+            if Z is None or N is None:
+                raise ValueError("Give name, Z and N")
+            name = getName(N, Z)
+
+        try:
+            ind = int(np.argwhere(self.isotopes.astype(str) == name.lower()))
+        except TypeError:
+            raise ValueError('isotope {} not in isotope list'.format(name))
+
         return self.isotopes[ind]
 
     def sort(self):
@@ -101,10 +89,10 @@ class IsotopeCollection(object):
         abs2 = np.vectorize(lambda n: n.Y)(other.isotopes)
 
         for name, i1, i2 in zip(*np.intersect1d(isos1, isos2, assume_unique=True, return_indices=True)):
-            new._addIsotope(name=name, Y=max(abs1[i1], abs2[i2]))
+            new.addIsotope(name=name, Y=max(abs1[i1], abs2[i2]))
         for name in np.setxor1d(isos1, isos2, assume_unique=True):
             Y = np.concatenate((abs1[isos1 == name], abs2[isos2 == name]))[0]
-            new._addIsotope(name=name, Y=Y)
+            new.addIsotope(name=name, Y=Y)
 
         new.sort()
         return new

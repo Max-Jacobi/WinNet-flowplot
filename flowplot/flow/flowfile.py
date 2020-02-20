@@ -16,7 +16,7 @@ class FlowFile(FlowCollection):
     - num          - number of flowfile
     '''
 
-    def __init__(self, path, ymin=1e-10):
+    def __init__(self, path, ymin=1e-20):
         super(FlowFile, self).__init__()
 
         self.path = path
@@ -30,21 +30,21 @@ class FlowFile(FlowCollection):
             else:
                 header = ff.readline()
                 self.time, self.temp, self.dens = np.array(header.split()).astype(float)
-                self.dt = self._get_fake_dt()
+                self.dt = self.get_fake_dt()
 
         for nin, zin, yin, nout, zout, yout, fl in np.loadtxt(path, skiprows=3):
             if (yin < ymin):
                 continue
             if yout < ymin:
                 yout = -np.inf
-            self._addFlowFromZN(nin, zin, yin, nout, zout, yout, fl)
+            self.addFlowFromZN(nin, zin, yin, nout, zout, yout, fl)
 
         self.sort()
 
         if len(self.flows) == 0:
             raise RuntimeError("No flows in {}".format(path))
 
-    def _get_fake_dt(self):
+    def get_fake_dt(self):
         if self.num == 0:
             return 0
         base = '/'.join(self.path.split('/')[:-2])
