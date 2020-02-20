@@ -45,12 +45,21 @@ class IsotopeCollection(object):
         - Z and N
         '''
         if name is not None:
-            ind = int(np.argwhere(self.isotopes.astype(str) == name.lower()))
+            try:
+                ind = int(np.argwhere(self.isotopes.astype(str) == name.lower()))
+            except TypeError:
+                raise ValueError('isotope {} not in isotope list'.format(name))
         elif chk is not None:
-            ind = int(np.argwhere(self._known_isos == chk))
+            try:
+                ind = int(np.argwhere(self._known_isos == chk))
+            except TypeError:
+                raise ValueError('isotope with chk {} not in isotope list'.format(chk))
         elif Z is not None and N is not None:
             chk = 1e3*Z + N
-            ind = int(np.argwhere(self._known_isos == chk))
+            try:
+                ind = int(np.argwhere(self._known_isos == chk))
+            except TypeError:
+                raise ValueError('isotope with Z={} and N={} not in isotope list'.format(Z, N))
         else:
             raise ValueError("Give name, Z and N, or checksum")
         return self.isotopes[ind]
