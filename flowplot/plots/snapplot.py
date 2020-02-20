@@ -1,5 +1,5 @@
-from ... import np
-from .. import plt, LogNorm
+from .. import np
+from . import plt, LogNorm
 from . import inset_axes
 
 

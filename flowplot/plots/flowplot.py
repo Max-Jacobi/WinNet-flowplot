@@ -1,8 +1,8 @@
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import FancyArrow, Rectangle
 from . import inset_axes
-from .. import LogNorm, cm, plt
-from ... import np
+from . import LogNorm, cm, plt
+from .. import np
 
 
 class FlowCollectionPlot(object):
