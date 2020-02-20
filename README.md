@@ -6,6 +6,7 @@ Contains classes and functions to plot flows from WinNet.
 
 Examples of usage in Examples.html
 
+Install by running "pip install <path/to/flowplot>"
 This is not very well tested. Use at your own risk.
 
 Author: Max J
