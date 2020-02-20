@@ -4,9 +4,8 @@ from matplotlib.colors import Normalize, LogNorm
 from matplotlib.colorbar import ColorbarBase
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-from ... import os, np, St_N, St_Z
-from ...flow import FlowFile
-from .. import plt
+from .. import os, np, St_N, St_Z
+from ..flow import FlowFile
 from .flowplot import FlowCollectionPlot
 from .snapplot import IsotopeCollectionPlot
 
