@@ -105,12 +105,10 @@ class FlowCollection(IsotopeCollection):
         def prevFlows(flow):
             new_flows = []
             for fl in flow.iso_in.flow_in:
-                # if fl.flow < flow.flow*5e-2:
-                # continue
                 new_flows.append(Flow(fl.iso_in, fl.iso_out, fl.flow))
-            sum_flows = sum(map(lambda f: f.flow, new_flows))
+            frac = flow.flow / sum(map(lambda f: f.flow, flow.iso_in.flow_in))
             for fl in new_flows:
-                fl.flow *= flow.flow/sum_flows
+                fl.flow *= frac
             return np.array(new_flows)
 
         iso = self.getIsotope(name=name)
@@ -123,9 +121,13 @@ class FlowCollection(IsotopeCollection):
         oldFlows = subcol.flows
         for nn in range(N-1):
             newFlows = []
+            reacnames = subcol.flows.astype(str)
             for fl in np.concatenate([prevFlows(fl) for fl in oldFlows]):
-                if not np.any(str(fl) == subcol.flows.astype(str)):
-                    newFlows.append(fl)
+                flname = str(fl)
+                newFlows.append(fl)
+                if flname in reacnames:
+                    subcol[reacnames == flname][0].flow += fl.flow
+                else:
                     subcol.addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
                                          Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
                                          flow=fl.flow)
@@ -142,12 +144,10 @@ class FlowCollection(IsotopeCollection):
         def followingFlows(flow):
             new_flows = []
             for fl in flow.iso_out.flow_out:
-                # if fl.flow < flow.flow*5e-2:
-                #     continue
                 new_flows.append(Flow(fl.iso_in, fl.iso_out, fl.flow))
-            sum_flows = sum(map(lambda f: f.flow, new_flows))
+            frac = flow.flow / sum(map(lambda f: f.flow, flow.iso_out.flow_out))
             for fl in new_flows:
-                fl.flow *= flow.flow/sum_flows
+                fl.flow *= frac
             return np.array(new_flows)
 
         iso = self.getIsotope(name=name)
@@ -158,11 +158,15 @@ class FlowCollection(IsotopeCollection):
                                  Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
                                  flow=fl.flow)
         oldFlows = subcol.flows
-        for nn in range(N):
+        for nn in range(N-1):
             newFlows = []
+            reacnames = subcol.flows.astype(str)
             for fl in np.concatenate([followingFlows(fl) for fl in oldFlows]):
-                if not np.any(str(fl) == subcol.flows.astype(str)):
-                    newFlows.append(fl)
+                flname = str(fl)
+                newFlows.append(fl)
+                if flname in reacnames:
+                    subcol[reacnames == flname][0].flow += fl.flow
+                else:
                     subcol.addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
                                          Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
                                          flow=fl.flow)

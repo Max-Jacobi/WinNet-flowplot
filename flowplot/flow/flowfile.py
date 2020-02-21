@@ -10,13 +10,14 @@ class FlowFile(FlowCollection):
     Input:
        path        - path to FlowFile
        ymin        - (optional) minimum abundance to be considered
+       flmin       - (optional) minimum flow to be considered (relative to bigest flow in file)
     Attributes:
     - isotopes     - array of isotope objects
     - flows        - array of absolute(!) flows (dY/dt)*dt
     - num          - number of flowfile
     '''
 
-    def __init__(self, path, ymin=1e-20):
+    def __init__(self, path, ymin=1e-20, flmin=1e-10):
         super(FlowFile, self).__init__()
 
         self.path = path
@@ -32,8 +33,12 @@ class FlowFile(FlowCollection):
                 self.time, self.temp, self.dens = np.array(header.split()).astype(float)
                 self.dt = self.get_fake_dt()
 
-        for nin, zin, yin, nout, zout, yout, fl in np.loadtxt(path, skiprows=3):
-            if (yin < ymin):
+        nins, zins, yins, nouts, zouts, youts, fls = np.loadtxt(path, skiprows=3, unpack=True)
+        mfl = max(fls) * flmin
+        for nin, zin, yin, nout, zout, yout, fl in zip(nins, zins, yins, nouts, zouts, youts, fls):
+            if fl < mfl:
+                continue
+            if yin < ymin:
                 continue
             if yout < ymin:
                 yout = -np.inf

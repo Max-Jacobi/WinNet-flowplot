@@ -44,11 +44,7 @@ class IsotopeCollection(object):
             if Z is None or N is None:
                 raise ValueError("Give name, Z and N")
             name = getName(N, Z)
-
-        try:
-            ind = int(np.argwhere(self.isotopes.astype(str) == name.lower()))
-        except TypeError:
-            raise ValueError('isotope {} not in isotope list'.format(name))
+        ind = int(np.argwhere(self.isotopes.astype(str) == name.lower()))
 
         return self.isotopes[ind]
 
