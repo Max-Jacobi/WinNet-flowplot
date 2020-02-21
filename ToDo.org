@@ -1,3 +1,7 @@
+* TODO add the option to get isotopes from snapshots
+  reading abundances from flowfiles takes longer since you need to check whether the isotope is already in the list
+  also some isotopes are abundant but have no flow going in and out and are thus not plotte
+* TODO add function to write out flowfiles to save integrated flows
 * TODO add elementlabel to plots
 * TODO add colorbars outside of plot
 * TODO add tick locators

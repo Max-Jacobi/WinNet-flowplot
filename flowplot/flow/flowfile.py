@@ -17,7 +17,7 @@ class FlowFile(FlowCollection):
     - num          - number of flowfile
     '''
 
-    def __init__(self, path, ymin=1e-20, flmin=1e-10):
+    def __init__(self, path, ymin=1e-20, flmin=0):
         super(FlowFile, self).__init__()
 
         self.path = path

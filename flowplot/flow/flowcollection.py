@@ -121,12 +121,11 @@ class FlowCollection(IsotopeCollection):
         oldFlows = subcol.flows
         for nn in range(N-1):
             newFlows = []
-            reacnames = subcol.flows.astype(str)
             for fl in np.concatenate([prevFlows(fl) for fl in oldFlows]):
                 flname = str(fl)
                 newFlows.append(fl)
-                if flname in reacnames:
-                    subcol[reacnames == flname][0].flow += fl.flow
+                if flname in subcol.flows.astype(str):
+                    subcol.flows[subcol.flows.astype(str) == flname][0].flow += fl.flow
                 else:
                     subcol.addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
                                          Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
@@ -160,12 +159,11 @@ class FlowCollection(IsotopeCollection):
         oldFlows = subcol.flows
         for nn in range(N-1):
             newFlows = []
-            reacnames = subcol.flows.astype(str)
             for fl in np.concatenate([followingFlows(fl) for fl in oldFlows]):
                 flname = str(fl)
                 newFlows.append(fl)
-                if flname in reacnames:
-                    subcol[reacnames == flname][0].flow += fl.flow
+                if flname in subcol.flows.astype(str):
+                    subcol.flows[subcol.flows.astype(str) == flname][0].flow += fl.flow
                 else:
                     subcol.addFlowFromZN(Nin=fl.iso_in.N, Zin=fl.iso_in.Z, Yin=fl.iso_in.Y,
                                          Nout=fl.iso_out.N, Zout=fl.iso_out.Z, Yout=fl.iso_out.Y,
