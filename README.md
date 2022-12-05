@@ -16,4 +16,4 @@ pip install git+https://github.com/Max-Jacobi/flowplot.git
 
 This is not very well tested. Use at your own risk.
 
-Author: Max J
+Author: Max Jacobi
